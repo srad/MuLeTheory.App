@@ -233,7 +233,7 @@ export default {
             },
             title: {},
             detail: {
-              formatter: "{value}%",
+              formatter: value => `${value.toFixed(0)}%`,
               fontWeight: "bolder",
             },
             data: [{value: 70.5}],
@@ -245,7 +245,7 @@ export default {
         series: [
           {
             type: "pie",
-            radius: ["50%", "70%"],
+            radius: ["60%", "80%"],
             color: [palette.notOk, palette.ok],
             data: [
               {value: partitionTolerance[0], name: `Tolerable`},
