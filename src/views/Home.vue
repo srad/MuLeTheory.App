@@ -20,7 +20,7 @@
       <b-row class="mt-5">
         <b-col></b-col>
         <b-col cols="8">
-          <router-link to="/game">
+          <router-link to="/dashboard">
             <p class="position-static mb-4 align-bottom text-monospace text-white">
               By using this app you agree and allow us to track your game data anonymously to analyse your learning progress.
               More see <router-link to="imprint" class="text-warning">here</router-link>

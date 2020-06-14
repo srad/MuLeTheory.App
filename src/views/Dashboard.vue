@@ -23,8 +23,8 @@
                   border-variant="primary">
             <b-row>
               <b-col>
-                <b-card header="Frequency by miscount duration"
-                        header-class="p-2"
+                <b-card header="Frequency and severity of rhythmic errors (sum over all runs)"
+                        header-class="p-2 text-center"
                         header-bg-variant="light"
                         body-class="p-2"
                         class="shadow-sm"
@@ -42,7 +42,7 @@
               </b-col>
               <b-col>
                 <b-card header="Tolerance Distribution"
-                        header-class="p-2"
+                        header-class="p-2 text-center"
                         header-bg-variant="light"
                         body-class="p-2"
                         class="shadow-sm"
@@ -56,25 +56,36 @@
       </b-row>
       <b-row>
         <b-col>
-          <b-card header="Exercise Submission Rate"
-                  header-class="p-2"
+          <b-card header="Overall Exercise Completion Rate"
+                  header-class="p-2 text-center"
                   header-bg-variant="primary"
                   header-text-variant="white"
                   body-class="p-2"
                   class="shadow-sm"
                   border-variant="primary">
-            <v-chart :options="gauge" class="pt-5"/>
+            <v-chart :options="gauge" class="pt-5 w-100"/>
           </b-card>
         </b-col>
         <b-col>
-          <b-card header="Start and Completion Rate by Exercise"
-                  header-class="p-2"
+          <b-card header="Course Completion Rate"
+                  header-class="p-2 text-center"
                   header-bg-variant="primary"
                   header-text-variant="white"
                   body-class="p-2"
                   class="shadow-sm"
                   border-variant="primary">
-            <v-chart :options="successByExercise" class="pt-5"/>
+            <v-chart :options="courseCompletionRate" class="pt-5 w-100"/>
+          </b-card>
+        </b-col>
+        <b-col cols="6">
+          <b-card header="Ratio between start and completion of each exercise"
+                  header-class="p-2 text-center"
+                  header-bg-variant="primary"
+                  header-text-variant="white"
+                  body-class="p-2"
+                  class="shadow-sm"
+                  border-variant="primary">
+            <v-chart :options="successByExercise" class="pt-5 w-100"/>
           </b-card>
         </b-col>
       </b-row>
@@ -100,8 +111,6 @@ const palette = {
   ok: "#9a8c98",
   notOk: "#c9ada7",
   mattPurple: ["#22223b", "#4a4e69", "#9a8c98", "#c9ada7", "#f2e9e4"].reverse(),
-  strongPurple: ["10002b", "240046", "3c096c", "5a189a", "7b2cbf", "9d4edd", "c77dff", "e0aaff"].map(v => `#${v}`)
-    .reverse(),
 };
 
 export default {
@@ -109,10 +118,7 @@ export default {
   components: {"v-chart": ECharts},
   data() {
     const {isTolerated, sampleSize, spanSize, histogram, partitionTolerance} = generateRhythm({quantile: 0.55});
-    const completionRate = exerciseCompletion();
-    const submissionRate = completionRate.map(v => v[1])
-      .reduce((a, b) => a + b) / completionRate.map(v => v[0])
-      .reduce((a, b) => a + b) * 100;
+    const {completionRate, startedCompletedPairs, courseCompletionRate, startCount, completeCount} = exerciseCompletion();
 
     return {
       isTolerated, sampleSize, spanSize, histogram, partitionTolerance,
@@ -150,6 +156,7 @@ export default {
       gauge: {
         min: 0,
         max: 100,
+        width: "auto",
         series: [
           {
             type: "gauge",
@@ -189,15 +196,71 @@ export default {
               length: "90%",
             },
             itemStyle: {
-              borderColor: "#a2a2a2",
+              borderColor: "#fff",
               borderWidth: 1,
             },
             title: {},
             detail: {
-              formatter: value => `${value.toFixed(0)}%`,
+              formatter: value => `${value.toFixed(1)}%`,
               fontWeight: "bolder",
             },
-            data: [{value: submissionRate}],
+            data: [{value: completionRate}],
+            padding: 0,
+          },
+        ],
+      },
+      courseCompletionRate: {
+        min: 0,
+        max: 100,
+        width: "auto",
+        series: [
+          {
+            type: "gauge",
+            startAngle: 180,
+            radius: "100%",
+            endAngle: 0,
+            grid: {
+              bottom: 0,
+            },
+            axisLabel: {
+              show: true,
+              fontSize: 8,
+              formatter: "{value}%",
+              color: "#000",
+            },
+            axisLine: {
+              lineStyle: {
+                width: 55,
+                color: [[0.25, palette.mattPurple[1]], [0.75, palette.mattPurple[2]], [1.0, palette.mattPurple[3]] /* [0.6, "#55a630ff"], [0.8, "#2b9348ff"], [1.0, "#007f5fff"],/*[0.6, "#bfd200ff"], [0.7, "#d4d700ff"], [0.8, "#dddf00ff"], [0.9, "#eeef20ff"], [1.0, "#ffff3fff"]*/],
+              },
+            },
+            axisTick: {
+              show: false,
+              length: 65,
+              lineStyle: {
+                color: "auto",
+              },
+            },
+            splitLine: {
+              length: 70,
+              lineStyle: {
+                color: "auto",
+              },
+            },
+            pointer: {
+              width: 6,
+              length: "90%",
+            },
+            itemStyle: {
+              borderColor: "#fff",
+              borderWidth: 1,
+            },
+            title: {},
+            detail: {
+              formatter: value => `${value.toFixed(1)}% (${completeCount})`,
+              fontWeight: "bolder",
+            },
+            data: [{value: courseCompletionRate}],
             padding: 0,
           },
         ],
@@ -220,9 +283,10 @@ export default {
         ],
       },
       successByExercise: {
+        width: "auto",
         trigger: "axis",
-        axisPointer: {            // 坐标轴指示器，坐标轴触发有效
-          type: "shadow",        // 默认为直线，可选为：'line' | 'shadow'
+        axisPointer: {
+          type: "shadow",
         },
         grid: {
           left: "2%",
@@ -232,11 +296,12 @@ export default {
           containLabel: true,
         },
         legend: {
+          top: "0%",
           data: ["Started", "Completed"],
         },
         xAxis: {
           type: "value",
-          name: "Exercises",
+          silent: true,
         },
         yAxis: {
           type: "category",
@@ -249,23 +314,23 @@ export default {
             name: "Started",
             type: "bar",
             color: palette.notOk,
-            stack: "总量",
+            stack: "stack1",
             label: {
               show: true,
               position: "insideRight",
             },
-            data: completionRate.map(v => v[0]),
+            data: startedCompletedPairs.map(v => v[0]),
           },
           {
             name: "Completed",
             type: "bar",
-            stack: "总量",
+            stack: "stack1",
             color: palette.ok,
             label: {
               show: true,
               position: "insideRight",
             },
-            data: completionRate.map(v => v[1]),
+            data: startedCompletedPairs.map(v => v[1]),
           },
         ],
       },
@@ -280,13 +345,15 @@ export default {
         {value: partitionTolerance[0], name: `Tolerable`},
         {value: partitionTolerance[1], name: `Intolerable`},
       ].sort(function (a, b) { return a.value - b.value; });
-      const completionRate = exerciseCompletion();
-      this.gauge.series[0].data[0].value = completionRate.map(v => v[1])
-        .reduce((a, b) => a + b) / completionRate.map(v => v[0])
-        .reduce((a, b) => a + b) * 100;
-      this.successByExercise.series[0].data = completionRate.map(v => v[0]);
-      this.successByExercise.series[0].data = completionRate.map(v => v[1]);
+      const {completionRate, startedCompletedPairs, courseCompletionRate} = exerciseCompletion();
+      this.gauge.series[0].data[0].value = completionRate;
+      this.courseCompletionRate.series[0].data[0].value = courseCompletionRate;
+      this.successByExercise.series[0].data = startedCompletedPairs.map(v => v[0]);
+      this.successByExercise.series[0].data = startedCompletedPairs.map(v => v[1]);
     },
+  },
+  mounted() {
+    window.addEventListener("resize", window.location.reload);
   },
 };
 </script>

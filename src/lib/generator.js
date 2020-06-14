@@ -1,6 +1,7 @@
 import {normal} from "./random";
 
 /**
+ * Generate real-like rhythmic exercise data.
  * @returns {{histogram: number[], partitionTolerance: number[], isTolerated: boolean[], spanSize: number, sampleSize: number}}
  */
 function generateRhythm({quantile, sampleSize = 60000, spanSize = 500} = {}) {
@@ -31,18 +32,31 @@ function generateRhythm({quantile, sampleSize = 60000, spanSize = 500} = {}) {
 }
 
 /**
- * @param {number} [sampleSize]
- * @param {number} [startAt]
- * @returns {[Number, Number][]}
+ *
+ * @param sampleSize
+ * @param startAt
+ * @returns {{startCount: *, startedCompletedPairs: [number, number][], courseCompletionRate: number, completionRate: number, completeCount: number}}
  */
 function exerciseCompletion({sampleSize = 8, startAt = 1000} = {}) {
-  const downRate = startAt / sampleSize * 0.8;
+  const downRate = startAt / sampleSize * 0.7;
 
-  return new Array(sampleSize).fill(0)
+  const startedCompletedPairs = new Array(sampleSize)
+    .fill(0)
     .map((_, i) => [
-      normal(startAt - i * downRate - downRate, startAt - i * downRate, 1.0).toFixed(0),
-      normal(startAt - (i + 1) * downRate - downRate, startAt - (i + 1) * downRate, 1.0).toFixed(0),
-    ]).reverse();
+      Math.ceil(normal(startAt - i * downRate - downRate, startAt - i * downRate, 1.0)),
+      Math.ceil(normal(startAt - (i + 1) * downRate - downRate, startAt - (i * 1.2) * downRate, 1.0)),
+    ])
+    .reverse();
+
+  const completionRate = startedCompletedPairs.map(v => v[1])
+    .reduce((a, b) => a + b) / startedCompletedPairs.map(v => v[0])
+    .reduce((a, b) => a + b) * 100;
+
+  const overallStart = startedCompletedPairs[startedCompletedPairs.length - 1][0] + startedCompletedPairs[startedCompletedPairs.length - 1][1];
+  const overallEnd = startedCompletedPairs[0][1];
+  const courseCompletionRate = (overallEnd / overallStart) * 100;
+
+  return {startedCompletedPairs, completionRate, courseCompletionRate, startCount: overallStart, completeCount: overallEnd};
 }
 
 export {generateRhythm, exerciseCompletion};
