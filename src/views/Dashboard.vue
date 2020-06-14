@@ -2,14 +2,14 @@
   <b-row class="mt-3">
     <b-col>
       <b-row class="mb-3">
-        <b-col cols="3">
+        <b-col cols="2">
           <b-button @click="regenerate" variant="primary">Generate Data</b-button>
         </b-col>
-        <b-col cols="2" class="text-right p-2">
-          <span>Tolerance Quantile: {{(quantile * 100).toFixed(1)}}%</span>
+        <b-col cols="2" class="text-right pt-2">
+          <span>Sample Size:{{samples}}</span>
         </b-col>
-        <b-col>
-          <b-form-input id="range-2" v-model="quantile" type="range" min="0" max="1" step="0.05"></b-form-input>
+        <b-col class="pt-2">
+          <b-form-input v-model="samples" type="range" min="1000" max="100000" step="1000"></b-form-input>
         </b-col>
       </b-row>
       <b-row class="mb-3">
@@ -23,28 +23,36 @@
                   border-variant="primary">
             <b-row>
               <b-col>
-                <b-card header="Frequency and severity of rhythmic errors (sum over all runs)"
-                        header-class="p-2 text-center"
-                        header-bg-variant="light"
-                        body-class="p-2"
-                        class="shadow-sm"
-                        border-variant="secondary">
-                  <v-chart class="w-100" :options="missCounts"/>
-                  <b-card-footer footer-bg-variant="light" class="m-0 p-2">
-                    <h5 class="m-0 float-left mr-2">
-                      <b-badge class="text-white" :style="{background: palette.ok}">Tolerated Error</b-badge>
-                    </h5>
-                    <h5 class="m-0">
-                      <b-badge class="text-white" :style="{background: palette.notOk}">Out of tolerance</b-badge>
-                    </h5>
+                <b-card
+                    no-body
+                    header-class="p-2 text-center"
+                    header-bg-variant="light"
+                    class="shadow-sm"
+                    border-variant="secondary">
+                  <b-card-body>
+                    <v-chart class="w-100" :options="missCounts"/>
+                  </b-card-body>
+                  <template v-slot:header>
+                    Frequency and severity of rhythmic errors (sum over all runs)
+                    <b-badge class="text-white mr-2" :style="{background: palette.ok}">Tolerated Error</b-badge>
+                    <b-badge class="text-white" :style="{background: palette.notOk}">Out of tolerance</b-badge>
+                  </template>
+                  <b-card-footer footer-bg-variant="light" class="m-0">
+                    <b-row>
+                      <b-col cols="4">
+                        <span>Tolerance Quantile: {{(quantile * 100).toFixed(1)}}%</span>
+                      </b-col>
+                      <b-col class="text-right">
+                        <b-form-input v-model="quantile" type="range" min="0" max="1" step="0.05"></b-form-input>
+                      </b-col>
+                    </b-row>
                   </b-card-footer>
                 </b-card>
               </b-col>
               <b-col>
-                <b-card header="Tolerance Distribution"
+                <b-card header="Tolerance Error Distribution (over all runs)"
                         header-class="p-2 text-center"
                         header-bg-variant="light"
-                        body-class="p-2"
                         class="shadow-sm"
                         border-variant="secondary">
                   <v-chart class="w-100" :options="tolerancePie"/>
@@ -113,16 +121,19 @@ const palette = {
   mattPurple: ["#22223b", "#4a4e69", "#9a8c98", "#c9ada7", "#f2e9e4"].reverse(),
 };
 
+const startSampleSize = 60000;
+
 export default {
   name: "Dashboard",
   components: {"v-chart": ECharts},
   data() {
-    const {isTolerated, sampleSize, spanSize, histogram, partitionTolerance} = generateRhythm({quantile: 0.55});
-    const {completionRate, startedCompletedPairs, courseCompletionRate, startCount, completeCount} = exerciseCompletion();
+    const {isTolerated, sampleSize, spanSize, histogram, partitionTolerance} = generateRhythm({quantile: 0.55, sampleSize: startSampleSize});
+    const {completionRate, startedCompletedPairs, courseCompletionRate, completeCount} = exerciseCompletion();
 
     return {
       isTolerated, sampleSize, spanSize, histogram, partitionTolerance,
       quantile: 0.55,
+      samples: startSampleSize,
       palette: palette,
       missCounts: {
         width: "auto",
@@ -130,7 +141,7 @@ export default {
           color: i => this.isTolerated[i.dataIndex] ? palette.ok : palette.notOk,
         },
         xAxis: {
-          name: `Counting error, either to fast (-) or too slow (+) (Samples: ${sampleSize})`,
+          name: `Counting error, either to fast (-) or too slow (+) (Samples: ${parseInt(startSampleSize)})`,
           nameLocation: "center",
           nameTextStyle: {
             padding: [18, 0, 0, 0],
@@ -338,9 +349,10 @@ export default {
   },
   methods: {
     regenerate() {
-      const {isTolerated, histogram, partitionTolerance} = generateRhythm({quantile: this.quantile});
+      const {isTolerated, histogram, partitionTolerance} = generateRhythm({sampleSize: parseInt(this.samples), quantile: this.quantile});
       this.isTolerated = isTolerated;
       this.missCounts.series[0].data = histogram;
+      this.missCounts.xAxis.name = `Counting error, either to fast (-) or too slow (+) (Samples: ${this.samples})`;
       this.tolerancePie.series[0].data = [
         {value: partitionTolerance[0], name: `Tolerable`},
         {value: partitionTolerance[1], name: `Intolerable`},

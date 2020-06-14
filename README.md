@@ -4,7 +4,7 @@
 
 Mobile elearning PWA to teach solving boolean formulas which are randomly generated and visualized as trees.
 
-<img src="/../master/assets/media/dashboard2.png?raw=true" width="90%">
+<img src="/../master/assets/media/dashboard3.png?raw=true" width="90%">
 
 The application is build on Vue 2.x and many other libraries for the visualization
 
