@@ -6,7 +6,7 @@ Demo: https://www.sedrad.com/static/mule/#/dashboard
 
 Mobile elearning PWA to teach solving boolean formulas which are randomly generated and visualized as trees.
 
-<img src="/../master/assets/media/dashboard2.png?raw=true" width="90%">
+<img src="/../master/assets/media/dashboard2.png?raw=true" width="100%">
 
 The application is build on Vue 2.x and many other libraries for the visualization
 
@@ -16,7 +16,7 @@ The project [MuLeTheory.API](https://github.com/srad/MuLeTheory.API) is used as 
 
 ```bash
 git clone https://github.com/srad/MuLeTheory.App.git
-cd MuLeTheory
+cd MuLeTheory.App
 npm install
 npm run serve
 ```
