@@ -4,7 +4,7 @@ Demo: https://www.sedrad.com/static/mule/#/dashboard
 
 [![Build Status](https://jenkins.sedrad.com/buildStatus/icon?job=MuLeTheory.App)](https://jenkins.sedrad.com/job/MuLeTheory.App/)
 
-Mobile elearning PWA to teach solving boolean formulas which are randomly generated and visualized as trees.
+Elearning research application for music learning exercises and theory with analytics dashboard.
 
 <img src="/../master/assets/media/dashboard2.png?raw=true" width="100%">
 
