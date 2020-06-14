@@ -97,8 +97,11 @@ import {generateRhythm, exerciseCompletion} from "../lib/generator";
 // const greens = ["007f5f", "2b9348", "55a630", "80b918", "aacc00", "bfd200", "d4d700", "dddf00", "eeef20", "ffff3f"];
 
 const palette = {
-  ok: "#55a630",
-  notOk: "#aacc00",
+  ok: "#9a8c98",
+  notOk: "#c9ada7",
+  mattPurple: ["#22223b", "#4a4e69", "#9a8c98", "#c9ada7", "#f2e9e4"].reverse(),
+  strongPurple: ["10002b", "240046", "3c096c", "5a189a", "7b2cbf", "9d4edd", "c77dff", "e0aaff"].map(v => `#${v}`)
+    .reverse(),
 };
 
 export default {
@@ -117,12 +120,6 @@ export default {
       palette: palette,
       missCounts: {
         width: "auto",
-        legend: {
-          padding: 5,
-          show: true,
-          right: 10,
-          top: 10,
-        },
         itemStyle: {
           color: i => this.isTolerated[i.dataIndex] ? palette.ok : palette.notOk,
         },
@@ -171,7 +168,7 @@ export default {
             axisLine: {
               lineStyle: {
                 width: 55,
-                color: [[0.25, "#d4d700ff"], [0.75, "#aacc00ff"], [1.0, "#80b918ff"] /* [0.6, "#55a630ff"], [0.8, "#2b9348ff"], [1.0, "#007f5fff"],/*[0.6, "#bfd200ff"], [0.7, "#d4d700ff"], [0.8, "#dddf00ff"], [0.9, "#eeef20ff"], [1.0, "#ffff3fff"]*/],
+                color: [[0.25, palette.mattPurple[1]], [0.75, palette.mattPurple[2]], [1.0, palette.mattPurple[3]] /* [0.6, "#55a630ff"], [0.8, "#2b9348ff"], [1.0, "#007f5fff"],/*[0.6, "#bfd200ff"], [0.7, "#d4d700ff"], [0.8, "#dddf00ff"], [0.9, "#eeef20ff"], [1.0, "#ffff3fff"]*/],
               },
             },
             axisTick: {
@@ -194,7 +191,6 @@ export default {
             itemStyle: {
               borderColor: "#a2a2a2",
               borderWidth: 1,
-              //   color: "#000", // pointer color
             },
             title: {},
             detail: {
@@ -229,9 +225,10 @@ export default {
           type: "shadow",        // 默认为直线，可选为：'line' | 'shadow'
         },
         grid: {
-          left: "3%",
-          right: "4%",
+          left: "2%",
+          right: "5%",
           bottom: "3%",
+          top: "8%",
           containLabel: true,
         },
         legend: {
@@ -239,6 +236,7 @@ export default {
         },
         xAxis: {
           type: "value",
+          name: "Exercises",
         },
         yAxis: {
           type: "category",

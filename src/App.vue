@@ -5,7 +5,7 @@
       <router-link to="/">
         <b-navbar-brand class="font-weight-bold text-white">
           <span class="text-warning">MuLeTheory</span>
-          <font-awesome-icon icon="music" class="ml-3 text-white text-dark"/>
+          <font-awesome-icon icon="music" class="ml-3 text-white"/>
         </b-navbar-brand>
       </router-link>
 
