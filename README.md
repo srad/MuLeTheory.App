@@ -6,11 +6,7 @@ Demo: https://www.sedrad.com/static/mule/#/dashboard
 
 Elearning research application for music learning exercises and theory with analytics dashboard.
 
-<<<<<<< HEAD
-<img src="/../master/assets/media/dashboard3.png?raw=true" width="90%">
-=======
-<img src="/../master/assets/media/dashboard2.png?raw=true" width="100%">
->>>>>>> 20776a3654a61b668b890e0d5d3a2ce088ff4df5
+<img src="/../master/assets/media/dashboard3.png?raw=true" width="100%">
 
 The application is build on Vue 2.x and many other libraries for the visualization
 
