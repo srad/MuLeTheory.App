@@ -74,17 +74,6 @@
             <v-chart :options="gauge" class="pt-5 w-100"/>
           </b-card>
         </b-col>
-        <b-col>
-          <b-card header="Course Completion Rate"
-                  header-class="p-2 text-center"
-                  header-bg-variant="primary"
-                  header-text-variant="white"
-                  body-class="p-2"
-                  class="shadow-sm"
-                  border-variant="primary">
-            <v-chart :options="courseCompletionRate" class="pt-5 w-100"/>
-          </b-card>
-        </b-col>
         <b-col cols="6">
           <b-card header="Ratio between start and completion of each exercise"
                   header-class="p-2 text-center"
@@ -94,6 +83,17 @@
                   class="shadow-sm"
                   border-variant="primary">
             <v-chart :options="successByExercise" class="pt-5 w-100"/>
+          </b-card>
+        </b-col>
+        <b-col>
+          <b-card header="Course Completion Rate"
+                  header-class="p-2 text-center"
+                  header-bg-variant="primary"
+                  header-text-variant="white"
+                  body-class="p-2"
+                  class="shadow-sm"
+                  border-variant="primary">
+            <v-chart :options="courseCompletionRate" class="pt-5 w-100"/>
           </b-card>
         </b-col>
       </b-row>
