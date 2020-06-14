@@ -2,6 +2,17 @@
   <b-row class="mt-3">
     <b-col>
       <b-row class="mb-3">
+        <b-col cols="3">
+          <b-button @click="regenerate" variant="primary">Generate Data</b-button>
+        </b-col>
+        <b-col cols="2" class="text-right p-2">
+          <span>Tolerance Quantile: {{(quantile * 100).toFixed(1)}}%</span>
+        </b-col>
+        <b-col>
+          <b-form-input id="range-2" v-model="quantile" type="range" min="0" max="1" step="0.05"></b-form-input>
+        </b-col>
+      </b-row>
+      <b-row class="mb-3">
         <b-col>
           <b-card header="Rhythmic Exercise Performance Overall"
                   header-class="p-2"
@@ -30,7 +41,7 @@
                 </b-card>
               </b-col>
               <b-col>
-                <b-card header="Tolerance Division Runs"
+                <b-card header="Tolerance Distribution"
                         header-class="p-2"
                         header-bg-variant="light"
                         body-class="p-2"
@@ -45,18 +56,26 @@
       </b-row>
       <b-row>
         <b-col>
-          <b-card header="Submission Rate"
+          <b-card header="Exercise Submission Rate"
                   header-class="p-2"
                   header-bg-variant="primary"
                   header-text-variant="white"
                   body-class="p-2"
                   class="shadow-sm"
                   border-variant="primary">
-            <v-chart :options="gauge" class="pt-5" />
+            <v-chart :options="gauge" class="pt-5"/>
           </b-card>
         </b-col>
         <b-col>
-
+          <b-card header="Start and Completion Rate by Exercise"
+                  header-class="p-2"
+                  header-bg-variant="primary"
+                  header-text-variant="white"
+                  body-class="p-2"
+                  class="shadow-sm"
+                  border-variant="primary">
+            <v-chart :options="successByExercise" class="pt-5"/>
+          </b-card>
         </b-col>
       </b-row>
     </b-col>
@@ -69,96 +88,43 @@ import "echarts/lib/chart/line";
 import "echarts/lib/chart/bar";
 import "echarts/lib/chart/pie";
 import "echarts/lib/chart/gauge";
+import "echarts/lib/component/legend";
+import "echarts/lib/component/title";
+import "echarts/lib/component/tooltip";
+import {generateRhythm, exerciseCompletion} from "../lib/generator";
 
-/**
- * General normal distributed random variable.
- * @see https://stackoverflow.com/questions/25582882/javascript-math-random-normal-distribution-gaussian-bell-curve
- * @param {Number} min
- * @param {Number} max
- * @param {Number} skew
- * @returns {Number}
- */
-function randn_bm(min, max, skew, sigma = 1.0, mu = 0) {
-  let u = 0, v = 0;
-  while (u === 0) {
-    u = Math.random();
-  }
-  // Converting [0,1) to (0,1)
-  while (v === 0) {
-    v = Math.random();
-  }
-  let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+// Dark to lightgreen
+// const greens = ["007f5f", "2b9348", "55a630", "80b918", "aacc00", "bfd200", "d4d700", "dddf00", "eeef20", "ffff3f"];
 
-  num = num / 10.0 + 0.5; // Translate to 0 -> 1
-  if (num > 1 || num < 0) {
-    num = randn_bm(min, max, skew);
-  }
-
-  // resample between 0 and 1 if out of range
-  num = Math.pow(num, skew); // Skew
-  num *= max - min; // Stretch to fill range
-  num += min; // offset to min
-
-  return sigma * num + mu;
-}
+const palette = {
+  ok: "#55a630",
+  notOk: "#aacc00",
+};
 
 export default {
   name: "Dashboard",
   components: {"v-chart": ECharts},
   data() {
-    // Normal distribution saved in array.
-    // The array is divided into two parts, 0..sampleSize < 0 and n..2sampleSize > 0
-    const sampleSize = 60000;
-    const spanSize = 500;
-    const randomStudentMissCounts = new Array(sampleSize).fill(0)
-      .map(_ => parseInt(randn_bm(-spanSize, spanSize, 1, 1)));
-    const groupedMissCounts = new Array(2 * spanSize).fill(0);
-    randomStudentMissCounts.forEach(v => groupedMissCounts[v + spanSize] += 1);
-    // Flatten the middle "spike", due to artificial data.
-    groupedMissCounts.forEach((val, i) => {
-      // Make it more unlikely, that some counted exactly mathematically perfect
-      const dX = Math.pow(Math.abs(i - spanSize) * 2 / spanSize, 2.8);
-      groupedMissCounts[i] = val * dX * 11;
-    });
-    // Flatten center spike
-    // groupedMissCounts[groupedMissCounts.length / 2] = (groupedMissCounts[groupedMissCounts.length / 2 - 1] + groupedMissCounts[groupedMissCounts.length / 2 + 1]) / 2;
-    const partitionTolerance = [0, 0];
-
-    // For quantile color lookup later
-    const isTolerated = groupedMissCounts.map((val, i) => {
-      const dX = Math.abs(i - spanSize);
-      const tolerated = dX < spanSize * 0.55;
-      partitionTolerance[tolerated ? 0 : 1] += val;
-      return tolerated;
-    });
-
-    const data = [];
-
-    for (let i = 0; i <= 360; i++) {
-      const t = i / 180 * Math.PI;
-      const r = Math.sin(2 * t) * Math.cos(2 * t);
-      data.push([r, i]);
-    }
-    // Dark to lightgreen
-    // const greens = ["007f5f", "2b9348", "55a630", "80b918", "aacc00", "bfd200", "d4d700", "dddf00", "eeef20", "ffff3f"];
-
-    const palette = {
-      ok: "#55a630",
-      notOk: "#aacc00",
-    };
+    const {isTolerated, sampleSize, spanSize, histogram, partitionTolerance} = generateRhythm({quantile: 0.55});
+    const completionRate = exerciseCompletion();
+    const submissionRate = completionRate.map(v => v[1])
+      .reduce((a, b) => a + b) / completionRate.map(v => v[0])
+      .reduce((a, b) => a + b) * 100;
 
     return {
+      isTolerated, sampleSize, spanSize, histogram, partitionTolerance,
+      quantile: 0.55,
       palette: palette,
       missCounts: {
         width: "auto",
-        grid: {
-          left: 40,
-          top: 30,
-          right: 40,
-          bottom: 70,
+        legend: {
+          padding: 5,
+          show: true,
+          right: 10,
+          top: 10,
         },
         itemStyle: {
-          color: i => isTolerated[i.dataIndex] ? palette.ok : palette.notOk,
+          color: i => this.isTolerated[i.dataIndex] ? palette.ok : palette.notOk,
         },
         xAxis: {
           name: `Counting error, either to fast (-) or too slow (+) (Samples: ${sampleSize})`,
@@ -180,12 +146,11 @@ export default {
         series: [
           {
             type: "bar",
-            data: groupedMissCounts,
+            data: histogram,
           },
         ],
       },
       gauge: {
-        title: {text: "Something"},
         min: 0,
         max: 100,
         series: [
@@ -236,7 +201,7 @@ export default {
               formatter: value => `${value.toFixed(0)}%`,
               fontWeight: "bolder",
             },
-            data: [{value: 70.5}],
+            data: [{value: submissionRate}],
             padding: 0,
           },
         ],
@@ -258,7 +223,72 @@ export default {
           },
         ],
       },
+      successByExercise: {
+        trigger: "axis",
+        axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+          type: "shadow",        // 默认为直线，可选为：'line' | 'shadow'
+        },
+        grid: {
+          left: "3%",
+          right: "4%",
+          bottom: "3%",
+          containLabel: true,
+        },
+        legend: {
+          data: ["Started", "Completed"],
+        },
+        xAxis: {
+          type: "value",
+        },
+        yAxis: {
+          type: "category",
+          data: new Array(8).fill(0)
+            .map((_, i) => `Exercise ${i + 1}`)
+            .reverse(),
+        },
+        series: [
+          {
+            name: "Started",
+            type: "bar",
+            color: palette.notOk,
+            stack: "总量",
+            label: {
+              show: true,
+              position: "insideRight",
+            },
+            data: completionRate.map(v => v[0]),
+          },
+          {
+            name: "Completed",
+            type: "bar",
+            stack: "总量",
+            color: palette.ok,
+            label: {
+              show: true,
+              position: "insideRight",
+            },
+            data: completionRate.map(v => v[1]),
+          },
+        ],
+      },
     };
+  },
+  methods: {
+    regenerate() {
+      const {isTolerated, histogram, partitionTolerance} = generateRhythm({quantile: this.quantile});
+      this.isTolerated = isTolerated;
+      this.missCounts.series[0].data = histogram;
+      this.tolerancePie.series[0].data = [
+        {value: partitionTolerance[0], name: `Tolerable`},
+        {value: partitionTolerance[1], name: `Intolerable`},
+      ].sort(function (a, b) { return a.value - b.value; });
+      const completionRate = exerciseCompletion();
+      this.gauge.series[0].data[0].value = completionRate.map(v => v[1])
+        .reduce((a, b) => a + b) / completionRate.map(v => v[0])
+        .reduce((a, b) => a + b) * 100;
+      this.successByExercise.series[0].data = completionRate.map(v => v[0]);
+      this.successByExercise.series[0].data = completionRate.map(v => v[1]);
+    },
   },
 };
 </script>
