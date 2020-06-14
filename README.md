@@ -1,10 +1,16 @@
 # MuLeTheory.App
 
+Demo: https://www.sedrad.com/static/mule/#/dashboard
+
 [![Build Status](https://jenkins.sedrad.com/buildStatus/icon?job=MuLeTheory.App)](https://jenkins.sedrad.com/job/MuLeTheory.App/)
 
-Mobile elearning PWA to teach solving boolean formulas which are randomly generated and visualized as trees.
+Elearning research application for music learning exercises and theory with analytics dashboard.
 
+<<<<<<< HEAD
 <img src="/../master/assets/media/dashboard3.png?raw=true" width="90%">
+=======
+<img src="/../master/assets/media/dashboard2.png?raw=true" width="100%">
+>>>>>>> 20776a3654a61b668b890e0d5d3a2ce088ff4df5
 
 The application is build on Vue 2.x and many other libraries for the visualization
 
@@ -14,7 +20,7 @@ The project [MuLeTheory.API](https://github.com/srad/MuLeTheory.API) is used as 
 
 ```bash
 git clone https://github.com/srad/MuLeTheory.App.git
-cd MuLeTheory
+cd MuLeTheory.App
 npm install
 npm run serve
 ```
