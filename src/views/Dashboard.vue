@@ -9,12 +9,12 @@
           <span>Sample Size:{{samples}}</span>
         </b-col>
         <b-col class="pt-2">
-          <b-form-input v-model="samples" type="range" min="1000" max="100000" step="1000"></b-form-input>
+          <b-form-input @change="regenerate" v-model="samples" type="range" min="1000" max="100000" step="1000"></b-form-input>
         </b-col>
       </b-row>
       <b-row class="mb-3">
         <b-col>
-          <b-card header="Rhythmic Exercise Performance Overall"
+          <b-card header="Aggregated Rhythmic Exercise Performance"
                   header-class="p-2"
                   header-bg-variant="primary"
                   header-text-variant="white"
@@ -43,14 +43,14 @@
                         <span>Tolerance Quantile: {{(quantile * 100).toFixed(1)}}%</span>
                       </b-col>
                       <b-col class="text-right">
-                        <b-form-input v-model="quantile" type="range" min="0" max="1" step="0.05"></b-form-input>
+                        <b-form-input @change="regenerate" v-model="quantile" type="range" min="0" max="1" step="0.05"></b-form-input>
                       </b-col>
                     </b-row>
                   </b-card-footer>
                 </b-card>
               </b-col>
-              <b-col>
-                <b-card header="Tolerance Error Distribution (over all runs)"
+              <b-col cols="5">
+                <b-card header="Ratio Rhythmic Error Distribution (over all runs)"
                         header-class="p-2 text-center"
                         header-bg-variant="light"
                         class="shadow-sm"
@@ -64,7 +64,7 @@
       </b-row>
       <b-row>
         <b-col>
-          <b-card header="Overall Exercise Completion Rate"
+          <b-card header="Average Exercise Completion Rate"
                   header-class="p-2 text-center"
                   header-bg-variant="primary"
                   header-text-variant="white"
@@ -75,7 +75,7 @@
           </b-card>
         </b-col>
         <b-col cols="6">
-          <b-card header="Ratio between start and completion of each exercise"
+          <b-card header="Ratio between number of students starting and completing each exercise"
                   header-class="p-2 text-center"
                   header-bg-variant="primary"
                   header-text-variant="white"
@@ -156,7 +156,15 @@ export default {
             formatter: "{value}ms",
           },
         },
-        yAxis: {},
+        yAxis: {
+          type: "value",
+          axisLabel: {
+            formatter: "{value}x",
+          },
+          name: "Frequency of the error",
+          nameLocation: "middle",
+          nameGap: 50,
+        },
         series: [
           {
             type: "bar",
@@ -281,15 +289,16 @@ export default {
           {
             type: "pie",
             radius: ["60%", "80%"],
+            avoidLabelOverlap: true,
+            label: {
+              fontSize: "20",
+            },
             color: [palette.notOk, palette.ok],
             data: [
-              {value: partitionTolerance[0], name: `Tolerable`},
-              {value: partitionTolerance[1], name: `Intolerable`},
+              {value: partitionTolerance[0], name: `Tolerable: ${partitionTolerance[0].toFixed(0)}`},
+              {value: partitionTolerance[1], name: `Intolerable: ${partitionTolerance[1].toFixed(0)}`},
             ].sort(function (a, b) { return a.value - b.value; }),
             roseType: "radius",
-            label: {
-              fontSize: 16,
-            },
           },
         ],
       },
@@ -302,7 +311,7 @@ export default {
         grid: {
           left: "2%",
           right: "5%",
-          bottom: "3%",
+          bottom: "13%",
           top: "8%",
           containLabel: true,
         },
@@ -311,8 +320,13 @@ export default {
           data: ["Started", "Completed"],
         },
         xAxis: {
-          type: "value",
+          name: "Number of students",
+          nameLocation: "center",
+          nameTextStyle: {
+            padding: [18, 0, 0, 0],
+          },
           silent: true,
+          type: "value",
         },
         yAxis: {
           type: "category",
@@ -354,8 +368,8 @@ export default {
       this.missCounts.series[0].data = histogram;
       this.missCounts.xAxis.name = `Counting error, either to fast (-) or too slow (+) (Samples: ${this.samples})`;
       this.tolerancePie.series[0].data = [
-        {value: partitionTolerance[0], name: `Tolerable`},
-        {value: partitionTolerance[1], name: `Intolerable`},
+        {value: partitionTolerance[0], name: `Tolerable ${partitionTolerance[0].toFixed(0)}`},
+        {value: partitionTolerance[1], name: `Intolerable ${partitionTolerance[1].toFixed(0)}`},
       ].sort(function (a, b) { return a.value - b.value; });
       const {completionRate, startedCompletedPairs, courseCompletionRate} = exerciseCompletion();
       this.gauge.series[0].data[0].value = completionRate;
