@@ -1,8 +1,6 @@
 # MuLeTheory.App
 
-Demo: https://www.sedrad.com/static/mule/#/dashboard
-
-[![Build Status](https://jenkins.sedrad.com/buildStatus/icon?job=MuLeTheory.App)](https://jenkins.sedrad.com/job/MuLeTheory.App/)
+Demo: https://mule.sedrad.com
 
 Elearning research application for music learning exercises and theory with analytics dashboard.
 
