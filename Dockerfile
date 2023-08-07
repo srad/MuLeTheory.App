@@ -1,5 +1,7 @@
 FROM node:lts-alpine
 
+RUN apk add g++ make py3-pip
+
 # install simple http server for serving static content
 RUN npm install -g http-server
 
