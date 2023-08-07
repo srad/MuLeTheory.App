@@ -2,6 +2,9 @@ FROM node:lts-alpine
 
 RUN apk add g++ make py3-pip
 
+RUN npm config set fetch-retry-mintimeout 20000
+RUN npm config set fetch-retry-maxtimeout 120000
+
 # install simple http server for serving static content
 RUN npm install -g http-server
 
