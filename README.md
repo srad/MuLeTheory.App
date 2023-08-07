@@ -2,7 +2,7 @@
 
  [![Build Status](https://teamcity.sedrad.com/app/rest/builds/buildType:(id:MuLeTheory_Build)/statusIcon)](https://teamcity.sedrad.com/viewType.html?buildTypeId=MuLeTheory_Build&guest=1)
 
-Demo: [https://mule.sedrad.com](https://muletheory.sedrad.com/)
+Demo: [https://muletheory.sedrad.com](https://muletheory.sedrad.com/)
 
 Elearning research application for music learning exercises and theory with analytics dashboard.
 
