@@ -5,6 +5,8 @@ RUN apk add g++ make py3-pip
 RUN npm config set fetch-retry-mintimeout 20000
 RUN npm config set fetch-retry-maxtimeout 120000
 
+RUN npm config set registry http://registry.npmjs.org/
+
 # install simple http server for serving static content
 RUN npm install -g http-server
 
