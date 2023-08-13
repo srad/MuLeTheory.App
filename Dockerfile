@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:16-alpine
 
 RUN apk add g++ make
 RUN apk add --update --no-cache curl py-pip
